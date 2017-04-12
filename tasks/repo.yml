@@ -1,0 +1,7 @@
+---
+- name: install rhel73.repo
+  copy:
+    src: files/rhel73.repo
+    dest: /etc/yum.repos.d/rhel73.repo
+    owner: root
+    group: root

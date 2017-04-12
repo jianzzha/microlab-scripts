@@ -1,0 +1,77 @@
+---
+- name: VM setup after started
+  hosts: VMs
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: get VM mac1 
+      shell: |
+        echo $(ip link show dev eth1 | sed -n -r 's/.*ether ([a-f0-9:]+).*/\1/p')
+      register: mac1 
+    - name: get VM mac2
+      shell: |
+        echo $(ip link show dev eth2 | sed -n -r 's/.*ether ([a-f0-9:]+).*/\1/p')
+      register: mac2 
+    - name: add mac1 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac1={{mac1.stdout}}" > vars/{{inventory_hostname}}_macs
+    - name: add mac2 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac2={{mac2.stdout}}" >> vars/{{inventory_hostname}}_macs   
+    - name: update yum repo for vpp
+      copy:
+        src: files/fdio.repo
+        dest: /etc/yum.repos.d/fdio.repo
+        owner: root
+        group: root
+    - name: insall vpp
+      yum:
+        name: vpp
+        state: present
+    - name: update vpp config file
+      copy:
+        src: files/startup.conf
+        dest: /etc/vpp/startup.conf
+        owner: bin
+        group: bin
+    - name: config VPP for routing
+      shell: |
+        myhostname={{ inventory_hostname }}
+        systemctl stop NetworkManager
+        hostname $myhostname
+        num=$(echo $myhostname | sed -r -n "s/demo([0-9]+)/\1/p")
+        max={{ vm_num }}
+        for ifname in eth1 eth2
+        do
+          if ! ip link show $ifname > /dev/null; then
+            continue
+          fi
+          businfo=`ethtool -i $ifname | grep 'bus-info' | awk '{print $2}'`
+          ifconfig $ifname down
+          sleep 1
+          dpdk-devbind -u $ifname
+          sleep 1
+          dpdk-devbind -b uio_pci_generic $businfo
+        done
+        systemctl stop vpp; systemctl start vpp
+        vppctl set interface state GigabitEthernet0/4/0 up
+        vppctl set interface state GigabitEthernet0/5/0 up
+        vppctl set interface ip address GigabitEthernet0/4/0 192.168.$((num-1)).$num/24
+        vppctl set interface ip address GigabitEthernet0/5/0 192.168.$num.$num/24
+        for (( j=0; j<=max; j++ ))
+        do
+          if (( j < num-1 )); then
+            vppctl ip route add 192.168.$j.0/24  via 192.168.$((num - 1)).$((num - 1)) GigabitEthernet0/4/0
+          fi
+          if (( j > num )); then
+             vppctl ip route add 192.168.$j.0/24 via 192.168.$num.$((num + 1)) GigabitEthernet0/5/0
+          fi
+        done
+        if ((num % 2)); then
+          vppctl set ip arp static GigabitEthernet0/4/0 192.168.$((num-1)).100 {{ traffic_src_mac }}
+          vppctl set ip arp static GigabitEthernet0/5/0 192.168.$num.100 {{ traffic_dst_mac }}
+        else
+          vppctl set ip arp static GigabitEthernet0/4/0 192.168.$((num-1)).100 {{ traffic_dst_mac }}
+          vppctl set ip arp static GigabitEthernet0/5/0 192.168.$num.100 {{ traffic_src_mac }}
+        fi
+      when: routing == "vpp"
+
+

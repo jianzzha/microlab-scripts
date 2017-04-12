@@ -1,0 +1,82 @@
+can't find businfo for em3, maybe invalid name or not in kernel
+can't find businfo for em4, maybe invalid name or not in kernel
+
+Network devices using DPDK-compatible driver
+============================================
+0000:01:00.2 'Ethernet Controller X710 for 10GbE SFP+' drv=vfio-pci unused=i40e
+0000:01:00.3 'Ethernet Controller X710 for 10GbE SFP+' drv=vfio-pci unused=i40e
+
+Network devices using kernel driver
+===================================
+0000:01:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=em1 drv=i40e unused=vfio-pci *Active*
+0000:01:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=em2 drv=i40e unused=vfio-pci 
+0000:03:00.0 'NetXtreme BCM5720 Gigabit Ethernet PCIe' if=p2p1 drv=tg3 unused=vfio-pci *Active*
+0000:03:00.1 'NetXtreme BCM5720 Gigabit Ethernet PCIe' if=p2p2 drv=tg3 unused=vfio-pci 
+
+Other network devices
+=====================
+<none>
+Namespace(dst_ips_list='192.168.3.100,192.168.0.100', dst_macs_list='fa:16:3e:f4:1f:5c,fa:16:3e:49:f7:4f', encap_dst_ips_list='', encap_dst_macs_list='', encap_src_ips_list='', encap_src_macs_list='', frame_size=64, max_loss_pct=0.002, num_flows=1024, one_shot=0, rate=4.0, run_bidirec=1, search_runtime=30, src_ips_list='192.168.0.100,192.168.3.100', src_macs_list='', traffic_generator='txrx', use_encap_ip_flows=0, use_encap_mac_flows=0, use_ip_flows=0, use_mac_flows=0, validation_runtime=60, vlan_ids_list='100,103')
+('traffic-generator', 'txrx')
+('rate', 4.0)
+('frame_size', 64)
+('max_loss_pct', 0.002)
+('one_shot', 0)
+('search-runtime', 30)
+('run-bidirec', 1)
+('use-num-flows', 1024)
+('use-mac-flows', 0)
+('ip-flows', 0)
+('use-encap-mac-flows', 0)
+('use-encap-ip-flows', 0)
+('src-macs-list', '')
+('dest-macs-list', 'fa:16:3e:f4:1f:5c,fa:16:3e:49:f7:4f')
+('encap-src-macs-list', '')
+('encap-dest-macs-list', '')
+('src-ips-list', '192.168.0.100,192.168.3.100')
+('dest-ips-list', '192.168.3.100,192.168.0.100')
+('encap-src-ips-list', '')
+('encap-dest-ips-list', '')
+
+search
+('running trial, rate', 4.0)
+('txrx cmd:', './MoonGen/build/MoonGen txrx.lua --calibrateTxRate=1 --rate=4.0 --bidirectional=1 --measureLatency=0 --runTime=30 --devices=0,1 --size=64 --flowMods="" --srcIps=192.168.0.100,192.168.3.100 --dstMacs=fa:16:3e:f4:1f:5c,fa:16:3e:49:f7:4f --dstIps=192.168.3.100,192.168.0.100 --vlanIds=100,103')
+[1;33m[WARN]  malloc() allocates objects >= 1 MiB from LuaJIT memory space.[0m
+
+[1;33m[WARN]  Install libjemalloc if you encounter out of memory errors.[0m
+
+[1;37m[INFO]  Initializing DPDK. This will take a few seconds...[0m
+
+EAL: Detected 56 lcore(s)
+
+EAL: No free hugepages reported in hugepages-1048576kB
+
+PANIC in rte_eal_init():
+
+Cannot get hugepage information
+
+12: [./MoonGen/build/MoonGen() [0x4253ae]]
+
+11: [/lib64/libc.so.6(__libc_start_main+0xf5) [0x7fc78f83db35]]
+
+10: [./MoonGen/build/MoonGen(main+0x1b2) [0x424b22]]
+
+9: [./MoonGen/build/MoonGen(_ZN7libmoon4mainEiPPc+0x84) [0x424de4]]
+
+8: [./MoonGen/build/MoonGen(lua_pcall+0x2d) [0x43166d]]
+
+7: [./MoonGen/build/MoonGen() [0x435f43]]
+
+6: [./MoonGen/build/MoonGen() [0x4731d6]]
+
+5: [./MoonGen/build/MoonGen() [0x4801d9]]
+
+4: [./MoonGen/build/MoonGen() [0x438034]]
+
+3: [./MoonGen/build/MoonGen(rte_eal_init+0xbeb) [0x49d9ab]]
+
+2: [./MoonGen/build/MoonGen(__rte_panic+0xbe) [0x421b03]]
+
+1: [./MoonGen/build/MoonGen(rte_dump_stack+0x1a) [0x4a1d4a]]
+
+binary search failed because no packets were transmitted

@@ -1,0 +1,17 @@
+---
+- name: check SNAT entry
+  shell: iptables -t nat -L POSTROUTING | egrep "MASQUERADE.*anywhere.*anywhere"
+  register: testsnat
+  failed_when: testsnat.stderr != ""
+- name: setup snat for VM if not done
+  shell: iptables -t nat -A POSTROUTING -o {{external_int}} -j MASQUERADE
+  when: testsnat.rc == 1
+- name: setup ip forwarding and VM default gw
+  shell: |
+      echo 1 > /proc/sys/net/ipv4/ip_forward
+      ifconfig {{vm_connection_port}} 0
+      ip a add {{vm_connection_ipv4}} dev {{vm_connection_port}} 
+      ip link set up dev {{vm_connection_port}}
+  args:
+    chdir: "{{install_dir}}" 
+

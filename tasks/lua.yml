@@ -1,0 +1,20 @@
+---
+- name: install git
+  yum:
+    name: git
+    state: present
+- name: install lua
+  shell: |
+      [ -d lua-trafficgen ] || git clone https://github.com/atheurer/lua-trafficgen || exit 1
+      yum -y install gcc gcc-c++ make cmake kernel-devel
+      cd lua-trafficgen
+      ./setup.sh && touch {{install_dir}}/install_lua_log.txt
+  args:
+    chdir: /root
+    creates: "{{install_dir}}/install_lua_log.txt"
+- name: copy lua config
+  copy:
+    src: files/opnfv-vsperf-cfg.lua
+    dest: /root/lua-trafficgen/MoonGen
+    owner: root
+    group: root

@@ -1,0 +1,40 @@
+---
+- name: controller patch after overcloud install
+  hosts: controllers
+  remote_user: heat-admin
+  become: true
+  vars_files:
+    - vars/controller.yml
+  tasks:
+    - name: fix ml2_conf.ini flat network config
+      lineinfile:
+        name: /etc/neutron/plugins/ml2/ml2_conf.ini
+        regexp: "^flat_networks ="
+        line: flat_networks = *
+    - include: tasks/repo.yml
+    - name: install wget
+      yum:
+        name: wget
+        state: present
+    - name: create rpm package directory
+      file:
+        path: "{{install_dir}}"
+        state: directory
+        mode: 0755
+    - include: tasks/tuned.yml
+    - include: tasks/dpdk.yml
+    - include: tasks/lua.yml
+    - name: reboot the node
+      shell: "nohup sh -c '( sleep 5 ; shutdown -r now )' &" 
+      async: 0
+      poll: 0
+      ignore_errors: true
+    - name: wait for reboot complete 
+      local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+      sudo: false
+    - name: MoonGen preparation file 
+      copy: src=scripts/prepare.sh dest=/root/lua-trafficgen/ mode=0777 owner=root group=root 
+    - name: copy overcloudrc
+      copy: src=/home/stack/with-dpdk/overcloudrc dest=/root/overcloudrc mode=0644 owner=root group=root
+
+  

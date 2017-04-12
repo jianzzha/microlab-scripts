@@ -1,0 +1,11 @@
+external_int: p2p1
+vm_connection_port: em1
+vm_connection_ipv4: 10.1.1.1/24
+overcloud_access_vlan: 10
+overcloud_access_ipv4: 172.21.0.1/24
+tuned_cores: 2,4
+install_dir: /root/rpm-pkgs
+traffic_src_mac: f8:bc:12:22:85:64
+traffic_dst_mac: f8:bc:12:22:85:66
+lua_config_file: /root/lua-trafficgen/MoonGen/opnfv-vsperf-cfg.lua
+routing: vpp

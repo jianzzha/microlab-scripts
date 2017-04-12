@@ -1,0 +1,32 @@
+---
+- name: VM setup after started
+  hosts: VMs
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: update yum repo for vpp
+      copy:
+        src: files/fdio.repo
+        dest: /etc/yum.repos.d/fdio.repo
+        owner: root
+        group: root
+      when: routing == "vpp"
+    - name: insall vpp
+      yum:
+        name: vpp
+        state: present
+      when: routing == "vpp"
+    - name: update vpp config file
+      copy:
+        src: files/startup.conf
+        dest: /etc/vpp/startup.conf
+        owner: bin
+        group: bin
+      when: routing == "vpp"
+    - include: tasks/routing.yml
+    - include: tasks/get_macs.yml
+    - name: add mac1 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac1={{mac1.stdout}}" > vars/{{inventory_hostname}}_macs
+    - name: add mac2 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac2={{mac2.stdout}}" >> vars/{{inventory_hostname}}_macs
+

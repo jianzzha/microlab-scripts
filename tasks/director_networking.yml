@@ -1,0 +1,25 @@
+---
+- name: check SNAT entry
+  shell: iptables -t nat -L POSTROUTING | egrep "MASQUERADE.*anywhere.*anywhere"
+  register: testsnat
+  failed_when: testsnat.stderr != ""
+- name: setup snat for VM if not done
+  shell: iptables -t nat -A POSTROUTING -o {{external_int}} -j MASQUERADE
+  when: testsnat.rc == 1
+- name: setup director ip forwarding and default gw 
+  shell: |
+      echo 1 > /proc/sys/net/ipv4/ip_forward
+      if ! ip a show {{vm_connection_port}} | egrep "{{vm_connection_ipv4}}"; then
+        ifconfig {{vm_connection_port}} 0
+        ip a add {{vm_connection_ipv4}} dev {{vm_connection_port}} 
+        ip link set up dev {{vm_connection_port}}
+      fi
+      if ! ip a show vlan{{overcloud_access_vlan}}; then
+        ovs-vsctl add-port br-ctlplane vlan{{overcloud_access_vlan}} -- set interface vlan{{overcloud_access_vlan}} type=internal
+        ovs-vsctl set port vlan{{overcloud_access_vlan}} tag={{overcloud_access_vlan}}
+      fi
+      if ! ip a show vlan{{overcloud_access_vlan}} | egrep "{{overcloud_access_ipv4}}"; then
+        ip a add {{overcloud_access_ipv4}} dev vlan{{overcloud_access_vlan}}
+        ip link set up dev vlan{{overcloud_access_vlan}}
+      fi
+

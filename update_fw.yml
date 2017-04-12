@@ -1,0 +1,73 @@
+---
+- name: update FW
+  hosts: FW 
+  remote_user: heat-admin
+  become: true
+  vars_files:
+    - vars/compute.yml
+  tasks:
+    - name: install driverctl
+      yum: name=driverctl state=present
+    - name: copy install files
+      copy:
+        src: files/xl710_update/
+        dest: /root/xl710_update/
+    - name: install kernel
+      shell: |
+        rpm -i --nodeps --force ./kernel-3.10.0-327.el7.x86_64.rpm
+        grubby --set-default=/boot/vmlinuz-3.10.0-327.el7.x86_64
+        systemctl disable neutron-openvswitch-agent.service
+      args:
+        chdir: /root/xl710_update
+    - name: comment out ovsdb 
+      lineinfile:
+        name: /usr/lib/systemd/system/openvswitch.service
+        regexp: "ovsdb-server"
+        line: "#BindsTo=ovsdb-server.service"
+    - name: comment out ovs-vscwitchd
+      lineinfile:
+        name: /usr/lib/systemd/system/openvswitch.service
+        regexp: ovs-vswitchd
+        line: "#BindsTo=ovs-vswitchd.service"
+    - name: reboot 1
+      shell: "nohup sh -c '( sleep 5 ; shutdown -r now )' &"
+      async: 0
+      poll: 0
+      ignore_errors: true
+    - name: wait for reboot 1 completet
+      local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+      sudo: false
+    - name: stop ovs etc service
+      shell: |
+        rmmod i40e || exit 1
+        for ((i=0; i<4;i++)); do
+          driverctl unset-override 0000:01:00.$i 
+        done
+        insmod ./Intel_LAN_17.5.0_Linux_Binary_RPMs_A00/RHEL7.2_KMOD/lib/modules/3.10.0-327.el7.x86_64/extra/i40e/i40e.ko || exit 1
+        cd dell_firmware
+        chmod 777 ./nvmupdate64e
+        ./nvmupdate64e -u -l update-log.txt || exit 1
+        grubby --set-default=/boot/vmlinuz-3.10.0-514.2.2.el7.x86_64
+        systemctl enable neutron-openvswitch-agent.service
+      args:
+        chdir: /root/xl710_update
+    - name: recover ovsdb
+      lineinfile:
+        name: /usr/lib/systemd/system/openvswitch.service
+        regexp: "ovsdb-server"
+        line: "BindsTo=ovsdb-server.service"
+    - name: recover ovs
+      lineinfile: 
+        name: /usr/lib/systemd/system/openvswitch.service
+        regexp: "ovs-vswitchd"
+        line: "BindsTo=ovs-vswitchd.service"
+    - name: reboot 2 
+      shell: "nohup sh -c '( sleep 5 ; shutdown -r now )' &"
+      async: 0
+      poll: 0
+      ignore_errors: true
+    - name: wait for reboot 2 completet
+      local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+      sudo: false
+
+

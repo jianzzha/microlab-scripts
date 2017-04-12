@@ -1,0 +1,14 @@
+---
+- name: update authorized_key for root 
+  hosts: all 
+  #remote_user: heat-admin
+  #become: true
+  tasks:
+    - name: update root authorized_keys  
+      shell: |
+        > /root/.ssh/authorized_keys
+        echo "{{ stack_key }}" >> /root/.ssh/authorized_keys
+        echo "{{ root_key }}" >> /root/.ssh/authorized_keys
+    - name: copy director private key
+      copy: src=/home/stack/.ssh/id_rsa dest=/root/.ssh/id_rsa owner=root group=root mode=0600
+

@@ -1,0 +1,6 @@
+[rhel73-GA]
+name=rhel73-GA
+baseurl=http://download-node-02.eng.bos.redhat.com/released/RHEL-7/7.3/Server/x86_64/os/
+enabled=1
+gpgcheck=0
+

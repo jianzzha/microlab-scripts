@@ -1,0 +1,30 @@
+---
+- name: VM setup after started
+  hosts: VMs
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: get VM mac1
+      shell: |
+        mac=$(vppctl show hardware-interfaces | grep -A 1 "GigabitEthernet0/4/0" | awk '/address/ {print $3}')
+        echo $mac
+      register: mac1
+    - name: get VM mac2
+      shell: |
+        mac=$(vppctl show hardware-interfaces | grep -A 1 "GigabitEthernet0/5/0" | awk '/address/ {print $3}')
+        echo $mac
+      register: mac2
+    - name: add mac1 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac1={{mac1.stdout}}" > vars/{{inventory_hostname}}_macs
+    - name: add mac2 in local mac file
+      local_action: shell echo "{{inventory_hostname}}_mac2={{mac2.stdout}}" >> vars/{{inventory_hostname}}_macs
+    - name: update vpp arp table with trafficGen mac
+      shell: |
+        num=$(echo {{inventory_hostname}} | sed -r -n "s/demo([0-9]+)/\1/p")
+        if ((num % 2)); then
+          vppctl set ip arp static GigabitEthernet0/4/0 192.168.$((num-1)).100 {{ traffic_src_mac }}
+          vppctl set ip arp static GigabitEthernet0/5/0 192.168.$num.100 {{ traffic_dst_mac }}
+        else
+          vppctl set ip arp static GigabitEthernet0/4/0 192.168.$((num-1)).100 {{ traffic_dst_mac }}
+          vppctl set ip arp static GigabitEthernet0/5/0 192.168.$num.100 {{ traffic_src_mac }}
+        fi

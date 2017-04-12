@@ -1,0 +1,13 @@
+---
+- name: install dpdk
+  shell: |
+      [ -f dpdk-16.11-4.el7fdp.x86_64.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/dpdk/16.11/4.el7fdp/x86_64/dpdk-16.11-4.el7fdp.x86_64.rpm || exit 1 
+      [ -f dpdk-devel-16.11-4.el7fdp.x86_64.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/dpdk/16.11/4.el7fdp/x86_64/dpdk-devel-16.11-4.el7fdp.x86_64.rpm || exit 1 
+      [ -f dpdk-tools-16.11-4.el7fdp.x86_64.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/dpdk/16.11/4.el7fdp/x86_64/dpdk-tools-16.11-4.el7fdp.x86_64.rpm || exit 1 
+      [ -f dpdk-debuginfo-16.11-4.el7fdp.x86_64.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/dpdk/16.11/4.el7fdp/x86_64/dpdk-debuginfo-16.11-4.el7fdp.x86_64.rpm || exit 1 
+      yum -y install dpdk* || exit 1
+      touch install_dpdk_log.txt
+  args:
+    chdir: "{{install_dir}}"
+    creates: install_dpdk_log.txt
+

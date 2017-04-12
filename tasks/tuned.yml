@@ -1,0 +1,40 @@
+---
+- name: download and install tuned
+  shell: |
+      [ -f tuned-2.7.1-5.el7fdp.noarch.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/tuned/2.7.1/5.el7fdp/noarch/tuned-2.7.1-5.el7fdp.noarch.rpm || exit 1
+      [ -f python-linux-procfs-0.4.9-3.el7.noarch.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/python-linux-procfs/0.4.9/3.el7/noarch/python-linux-procfs-0.4.9-3.el7.noarch.rpm || exit 1
+      [ -f python-schedutils-0.4-6.el7.x86_64.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/python-schedutils/0.4/6.el7/x86_64/python-schedutils-0.4-6.el7.x86_64.rpm || exit 1
+      [ -f tuna-0.13-5.el7.noarch.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/tuna/0.13/5.el7/noarch/tuna-0.13-5.el7.noarch.rpm || exit 1
+      [ -f tuned-profiles-cpu-partitioning-2.7.1-5.el7fdp.noarch.rpm ] || wget http://download.eng.bos.redhat.com/brewroot/packages/tuned/2.7.1/5.el7fdp/noarch/tuned-profiles-cpu-partitioning-2.7.1-5.el7fdp.noarch.rpm || exit 1
+      rpm -i python-linux-procfs-0.4.9-3.el7.noarch.rpm
+      rpm -i python-schedutils-0.4-6.el7.x86_64.rpm
+      rpm -i tuna-0.13-5.el7.noarch.rpm
+      rpm -U tuned-2.7.1-5.el7fdp.noarch.rpm
+      rpm -i tuned-profiles-cpu-partitioning-2.7.1-5.el7fdp.noarch.rpm
+      touch install_tuned_log.txt
+  args:
+    chdir: "{{install_dir}}"
+    creates: install_tuned_log.txt
+  register: tuned_install
+- name: update tuned config
+  lineinfile:
+    name: /etc/tuned/cpu-partitioning-variables.conf
+    regexp: '^isolated_cores'
+    line: isolated_cores={{tuned_cores}}
+  when: tuned_install|success
+  register: tuned_config
+- name: update kernel parameters
+  shell: |
+      tuned-adm profile cpu-partitioning
+      sleep 1
+      grubby --update-kernel=`grubby --default-kernel` --args="default_hugepagesz=1G hugepagesz=1G hugepages=16 isolcpus={{tuned_cores}} iommu=pt intel_iommu=on" 
+      sleep 1
+      yum -y install libhugetlbfs-utils
+      hugeadm --create-global-mounts 
+      touch update_kernel_cmd_log.txt
+  when: tuned_config|success
+  register: update_kernel_cmd
+  args:
+    chdir: "{{install_dir}}"
+    creates: update_kernel_cmd_log.txt
+

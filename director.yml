@@ -1,0 +1,32 @@
+---
+- name: director setup after undercloud install 
+  hosts: director
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - include: tasks/director_networking.yml
+      tags:
+        - network
+    - include: tasks/repo.yml
+    - name: install wget
+      yum:
+        name: wget
+        state: present
+    - name: create rpm package directory
+      file:
+        path: "{{install_dir}}"
+        state: directory
+        mode: 0755
+    - include: tasks/tuned.yml
+    - include: tasks/dpdk.yml
+    - include: tasks/lua.yml
+    - name: build node list
+      shell: |
+          source ~stack/stackrc
+          echo "[computes]" > computes
+          nova list | sed -n -r 's/.*compute.*ctlplane=([.0-9]+).*/\1/ p' >> computes
+          echo "[controllers]" > controllers
+          nova list | sed -n -r 's/.*control.*ctlplane=([.0-9]+).*/\1/ p' >> controllers
+      args:
+        chdir: "{{playbook_dir}}"
+      

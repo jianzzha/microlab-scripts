@@ -1,0 +1,67 @@
+######## demo1 ############
+('total_tx_packets', 396757809)
+('total_tx_packets', 396757809)
+('total_lost_packets', 5994)
+('trial passed, percent loss', 0.0015107453121357467)
+RESULT:
+[
+{
+    "rx_packets": 198372796,
+    "tx_packets": 198379062
+}
+,
+{
+    "rx_packets": 198379019,
+    "tx_packets": 198378747
+}
+]
+######## demo2 ############
+('tx_packets, tx_rate, device', '118381536', '3.946184', 1)
+('rx_packets, rx_rate, device', '0', '0.000000', 0)
+[1;37m[INFO]  totalRxPackets: 0[0m
+
+[1;37m[INFO]  totalDroppedPackets: 239965425 (100.000000%)[0m
+
+[0;34m[Device: id=0] TX[0m: 3.70 (StdDev 1.01) Mpps, 2015 (StdDev 547) Mbit/s (2607 Mbit/s with framing), total 122213826 packets with 8310540168 bytes (incl. CRC)
+
+[1;36m[Device: id=1] RX[0m: 0.00 (StdDev 0.00) Mpps, 0 (StdDev 0) Mbit/s (0 Mbit/s with framing), total 5 packets with 1357 bytes (incl. CRC)
+
+[0;34m[Device: id=1] TX[0m: 3.63 (StdDev 0.91) Mpps, 1975 (StdDev 495) Mbit/s (2556 Mbit/s with framing), total 119812581 packets with 8147255508 bytes (incl. CRC)
+
+[1;36m[Device: id=0] RX[0m: 0.00 (StdDev 0.00) Mpps, 0 (StdDev 0) Mbit/s (0 Mbit/s with framing), total 5 packets with 1357 bytes (incl. CRC)
+
+('total_tx_packets', 239965425)
+binary search failed because no packets were received
+######## demo3 ############
+
+[1;36m[Device: id=1] RX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[0;34m[Device: id=1] TX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[1;36m[Device: id=0] RX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[0;34m[Device: id=0] TX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[1;36m[Device: id=1] RX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[0;34m[Device: id=1] TX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[1;36m[Device: id=0] RX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with framing)
+
+[0;34m[Device: id=0] TX[0m: 2.99 Mpps, 1625 Mbit/s (2102 Mbit/s with f######## demo1 - demo3 ############
+
+7: [./MoonGen/build/MoonGen() [0x435f43]]
+
+6: [./MoonGen/build/MoonGen() [0x4731d6]]
+
+5: [./MoonGen/build/MoonGen() [0x4801d9]]
+
+4: [./MoonGen/build/MoonGen() [0x438034]]
+
+3: [./MoonGen/build/MoonGen(rte_eal_init+0xbeb) [0x49d9ab]]
+
+2: [./MoonGen/build/MoonGen(__rte_panic+0xbe) [0x421b03]]
+
+1: [./MoonGen/build/MoonGen(rte_dump_stack+0x1a) [0x4a1d4a]]
+
+binary search failed because no packets were transmitted

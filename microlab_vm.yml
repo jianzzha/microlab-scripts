@@ -1,0 +1,17 @@
+---
+- name: VM setup after started
+  hosts: VMs
+  tasks:
+    - name: copy start_test file
+      copy:
+        src: files/microlab_macsawp
+        dest: /root/start_test
+        owner: root
+        group: root
+        mode: 0777
+    - name: update root authorized_keys
+      shell: |
+        > /root/.ssh/authorized_keys
+        echo "{{ stack_key }}" >> /root/.ssh/authorized_keys
+        echo "{{ root_key }}" >> /root/.ssh/authorized_keys
+

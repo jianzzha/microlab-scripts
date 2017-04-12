@@ -1,0 +1,41 @@
+#!/bin/bash
+
+cmd=$0
+
+function usuage() {
+  echo "usuage: $cmd [number of round]"
+  exit 1
+}
+
+function error() {
+  echo $@
+  exit 1
+}
+
+if [ $# -eq 1 ]; then
+  if [ "$1" -eq "$1" ] 2>/dev/null; then
+    round=$1
+  else
+    usuage
+  fi
+elif [ $# -gt 1 ]; then
+  usuage 
+else
+  round=10  
+fi
+  
+if ! [ -f overcloudrc ]; then
+  error "couldn't find overcloudrc in current directory"
+fi
+
+source overcloudrc
+
+echo glance image download $round times
+
+image=$(openstack image list | grep active | head -1 | awk -F'|' '{print $2}' | awk '{print $1}')
+
+[ -n "$image" ] || error "Couldn't find image"
+
+echo test download image id $image
+for ((i=0;i<$round;i++)); do if ! glance image-download --file test.img $image ; then echo error; break; else echo $i; fi; done
+
